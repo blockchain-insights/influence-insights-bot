@@ -1,0 +1,11 @@
+celery
+loguru
+alembic
+sqlalchemy
+python-dotenv
+aiohttp
+pydantic-settings
+asyncpg
+redis
+ratelimit
+requests

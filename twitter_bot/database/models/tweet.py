@@ -2,10 +2,11 @@ from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.dialects.postgresql import insert
 from datetime import datetime
 from sqlalchemy.ext.declarative import declarative_base
+from database import OrmBase
 
 Base = declarative_base()
 
-class Tweet(Base):
+class Tweet(OrmBase):
     __tablename__ = 'tweets'
     id = Column(Integer, primary_key=True, autoincrement=True)
     tweet_text = Column(String, nullable=False)

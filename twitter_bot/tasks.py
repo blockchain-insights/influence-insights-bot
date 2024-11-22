@@ -2,7 +2,7 @@ from celery import shared_task
 import asyncio
 
 from settings import settings
-from twitter_service import TwitterBotService
+from twitter_bot_service import TwitterBotService
 from rest_client import RestClient
 from database.models.tweet import TweetManager
 from database.session_manager import DatabaseSessionManager

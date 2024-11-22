@@ -8,6 +8,9 @@ load_dotenv()
 class Settings(BaseSettings):
     FETCH_API_BASE_URL: str
 
+    CALLER_INTERVAL_MINUTES: int
+    TRIGGER_IMMEDIATE: bool
+
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
     POSTGRES_HOST: str
@@ -15,6 +18,8 @@ class Settings(BaseSettings):
     POSTGRES_DB: str
 
     REDIS_URL: str
+
+    TWITTER_BEARER_TOKEN: str
 
     DB_URL_OBJ: URL = URL.create(
         "postgresql+asyncpg",
