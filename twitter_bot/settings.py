@@ -8,7 +8,8 @@ load_dotenv()
 class Settings(BaseSettings):
     FETCH_API_BASE_URL: str
 
-    CALLER_INTERVAL_MINUTES: int
+    CALLER_INTERVAL_HOURS_GENERATE: int
+    CALLER_INTERVAL_HOURS_POST: int
     TRIGGER_IMMEDIATE: bool
 
     POSTGRES_USER: str
@@ -19,6 +20,10 @@ class Settings(BaseSettings):
 
     REDIS_URL: str
 
+    TWITTER_API_KEY: str
+    TWITTER_API_SECRET_KEY: str
+    TWITTER_ACCESS_TOKEN: str
+    TWITTER_ACCESS_TOKEN_SECRET: str
     TWITTER_BEARER_TOKEN: str
 
     DB_URL_OBJ: URL = URL.create(

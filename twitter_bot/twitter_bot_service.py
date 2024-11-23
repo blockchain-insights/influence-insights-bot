@@ -2,14 +2,19 @@ import random
 from loguru import logger
 from database.models.tweet import TweetManager
 from rest_client import RestClient
+from twitter_api.twitter_service import TwitterService
 
 
 class TwitterBotService:
-    def __init__(self, rest_client: RestClient, tweet_manager: TweetManager):
+    def __init__(self, rest_client: RestClient, tweet_manager: TweetManager, twitter_service: TwitterService):
         self.rest_client = rest_client
         self.tweet_manager = tweet_manager
+        self.twitter_service = twitter_service
 
-    async def generate_and_post_tweet(self, token: str):
+    async def generate_and_store_tweet(self, token: str):
+        """
+        Fetches data from an API, generates a tweet, and stores it in the database.
+        """
         try:
             # Fetch data from the REST API
             data = await self.rest_client.fetch_insightful_data(token=token)
@@ -59,3 +64,27 @@ class TwitterBotService:
 
         except Exception as e:
             logger.error(f"Error generating tweet: {e}")
+
+    async def post_random_tweet(self):
+        """
+        Retrieve a random tweet from the database and post it using the TwitterClient.
+        """
+        try:
+            # Retrieve a random tweet from the database
+            random_tweet = await self.tweet_manager.get_random_tweet()
+
+            if not random_tweet:
+                logger.warning("No tweets available to post.")
+                return
+
+            # Post the tweet using the TwitterClient
+            response = self.twitter_service.post_tweet(random_tweet.tweet_text)
+
+            if not response:
+                logger.error("Failed to post the tweet.")
+                return
+
+            tweet_id = response.get("data", {}).get("id")
+            logger.info(f"Successfully posted tweet with ID: {tweet_id}")
+        except Exception as e:
+            logger.error(f"Error posting random tweet: {e}")

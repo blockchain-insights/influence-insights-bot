@@ -8,6 +8,9 @@ class TwitterService:
         self.twitter_client = twitter_client
 
     def post_tweet(self, tweet_text: str) -> Optional[str]:
+        """
+        Posts a tweet and returns the tweet ID if successful.
+        """
         try:
             response = self.twitter_client.post_tweet(tweet_text)
             if not response:
@@ -15,7 +18,7 @@ class TwitterService:
                 return None
 
             logger.info(f"Successfully posted tweet: {response}")
-            return response.get("data", {}).get("id")  # Return the tweet ID if available
+            return response.get("id")  # Return the tweet ID if available
         except Exception as e:
             logger.error(f"Error posting tweet: {e}")
             return None
