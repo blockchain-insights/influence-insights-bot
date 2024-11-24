@@ -57,7 +57,8 @@ class TwitterBotService:
                 f"User: @{selected_user['username']} | Followers: {selected_user['follower_count']}\n"
                 f"Engagement: {selected_user['avg_engagement']:.2f} | Tweets: {selected_user['tweet_count']}\n"
                 f"Recent: {selected_user['recent_tweets'][0]}\n"
-                f"🔗 {selected_user['tweet_urls'][0]}"
+                f"🔗 {selected_user['tweet_urls'][0]}\n\n"
+                f"🌐 Check Influence Insights Subnet on $COMAI for more!"
             )
 
             logger.info(f"Generated Tweet: {tweet_text}")
