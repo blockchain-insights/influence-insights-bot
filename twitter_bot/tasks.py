@@ -62,7 +62,7 @@ async def post_random_tweet():
         twitter_client = TwitterClient(settings)
         twitter_service = TwitterService(twitter_client)
         file_service = FileService("test_tweets.log")
-        test_mode = bool(os.getenv('TEST_MODE', False))
+        test_mode = os.getenv('TEST_MODE', 'False').strip().lower() in ['true', '1', 'yes']
         twitter_bot = TwitterBotService(None, tweet_manager, twitter_service, file_service, test_mode)
 
         await twitter_bot.post_random_tweet()
