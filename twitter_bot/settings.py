@@ -25,6 +25,8 @@ class Settings(BaseSettings):
     TWITTER_ACCESS_TOKEN: str
     TWITTER_ACCESS_TOKEN_SECRET: str
     TWITTER_BEARER_TOKEN: str
+    TWITTER_CLIENT_ID: str
+    TWITTER_CLIENT_SECRET: str
 
     DB_URL_OBJ: URL = URL.create(
         "postgresql+asyncpg",

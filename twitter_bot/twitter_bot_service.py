@@ -3,20 +3,29 @@ from loguru import logger
 from database.models.tweet import TweetManager
 from rest_client import RestClient
 from twitter_api.twitter_service import TwitterService
+from helpers.file_service import FileService  # Import the FileService
 
 
 class TwitterBotService:
-    def __init__(self, rest_client: RestClient, tweet_manager: TweetManager, twitter_service: TwitterService):
+    def __init__(
+        self,
+        rest_client: RestClient,
+        tweet_manager: TweetManager,
+        twitter_service: TwitterService,
+        file_service: FileService,
+        test_mode: bool = False,  # Add test mode flag
+    ):
         self.rest_client = rest_client
         self.tweet_manager = tweet_manager
         self.twitter_service = twitter_service
+        self.file_service = file_service
+        self.test_mode = test_mode  # Initialize the flag
 
     async def generate_and_store_tweet(self, token: str):
         """
         Fetches data from an API, generates a tweet, and stores it in the database.
         """
         try:
-            # Fetch data from the REST API
             data = await self.rest_client.fetch_insightful_data(token=token)
 
             # Debug: Log raw response
@@ -51,7 +60,6 @@ class TwitterBotService:
                 f"🔗 {selected_user['tweet_urls'][0]}"
             )
 
-            # Log the tweet
             logger.info(f"Generated Tweet: {tweet_text}")
 
             # Save to the database
@@ -67,24 +75,28 @@ class TwitterBotService:
 
     async def post_random_tweet(self):
         """
-        Retrieve a random tweet from the database and post it using the TwitterClient.
+        Retrieve a random tweet from the database and post it or save it to a file in test mode.
         """
         try:
-            # Retrieve a random tweet from the database
             random_tweet = await self.tweet_manager.get_random_tweet()
 
             if not random_tweet:
                 logger.warning("No tweets available to post.")
                 return
 
-            # Post the tweet using the TwitterClient
-            response = self.twitter_service.post_tweet(random_tweet.tweet_text)
+            if self.test_mode:
+                # Append tweet to file in test mode
+                self.file_service.append_to_file(random_tweet.tweet_text)
+                logger.info("Tweet appended to file in test mode.")
+            else:
+                # Post the tweet using the TwitterClient
+                response = self.twitter_service.post_tweet(random_tweet.tweet_text)
 
-            if not response:
-                logger.error("Failed to post the tweet.")
-                return
+                if not response:
+                    logger.error("Failed to post the tweet.")
+                    return
 
-            tweet_id = response.get("data", {}).get("id")
-            logger.info(f"Successfully posted tweet with ID: {tweet_id}")
+                tweet_id = response.get("data", {}).get("id")
+                logger.info(f"Successfully posted tweet with ID: {tweet_id}")
         except Exception as e:
             logger.error(f"Error posting random tweet: {e}")

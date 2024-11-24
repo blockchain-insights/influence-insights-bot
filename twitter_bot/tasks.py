@@ -10,12 +10,14 @@ from dotenv import load_dotenv
 import os
 import asyncio
 from loguru import logger
+from helpers.file_service import FileService
 from dotenv import load_dotenv
 from celery import shared_task
 from rest_client import RestClient
 from database.session_manager import DatabaseSessionManager
 from database.models.tweet import TweetManager
 from twitter_api.twitter_client import TwitterClient
+from twitter_api.twitter_service import TwitterService
 from twitter_bot_service import TwitterBotService
 from settings import Settings
 
@@ -37,7 +39,7 @@ async def generate_and_store_tweet():
         session_manager = DatabaseSessionManager()
         session_manager.init(settings.DATABASE_URL)
         tweet_manager = TweetManager(session_manager)
-        twitter_bot = TwitterBotService(rest_client, tweet_manager, None)
+        twitter_bot = TwitterBotService(rest_client, tweet_manager, None, None)
 
         await twitter_bot.generate_and_store_tweet(token="TAO")
     except Exception as e:
@@ -58,7 +60,10 @@ async def post_random_tweet():
         session_manager.init(settings.DATABASE_URL)
         tweet_manager = TweetManager(session_manager)
         twitter_client = TwitterClient(settings)
-        twitter_bot = TwitterBotService(None, tweet_manager, twitter_client)
+        twitter_service = TwitterService(twitter_client)
+        file_service = FileService("test_tweets.log")
+        test_mode = bool(os.getenv('TEST_MODE', False))
+        twitter_bot = TwitterBotService(None, tweet_manager, twitter_service, file_service, test_mode)
 
         await twitter_bot.post_random_tweet()
     except Exception as e:
