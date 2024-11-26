@@ -73,7 +73,7 @@ class TwitterBotService:
                 ),
                 # Template 3: Regional anomaly focus
                 (
-                    f"🌍 Regional anomaly detected: {selected_user['anomaly_type']} from {selected_user.get('region_name', 'an unknown region')}.\n"
+                    f"🌍 Regional anomaly detected: {selected_user['anomaly_type']} from {selected_user.get('region_name') or 'an unknown region'}.\n"
                     f"User @{selected_user['username']} posted: \"{selected_user['recent_tweets'][0]}\"\n"
                     f"Metrics: Followers - {selected_user['follower_count']}, Engagement - {selected_user['avg_engagement']:.2f}\n"
                     f"🔗 {selected_user['tweet_urls'][0]}\n\n"
