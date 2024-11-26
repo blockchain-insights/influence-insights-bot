@@ -51,19 +51,76 @@ class TwitterBotService:
             # Select a random user with an anomaly
             selected_user = random.choice(anomalies)
 
-            # Generate tweet content
-            tweet_text = (
-                f"🚨 Anomaly detected: {selected_user['anomaly_type']} 🚨\n"
-                f"User: @{selected_user['username']} | Followers: {selected_user['follower_count']}\n"
-                f"Engagement: {selected_user['avg_engagement']:.2f} | Tweets: {selected_user['tweet_count']}\n"
-                f"Recent: {selected_user['recent_tweets'][0]}\n"
-                f"🔗 {selected_user['tweet_urls'][0]}\n\n"
-                f"🌐 Check Influence Insights Subnet on $COMAI for more!"
-            )
+            # Templates for tweet generation
+            templates = [
+                # Template 1: High-level overview of anomaly
+                (
+                    f"🚨 Suspicious activity detected: {selected_user['anomaly_type']} 🚨\n"
+                    f"@{selected_user['username']} | Followers: {selected_user['follower_count']} | Verified: {'✅' if selected_user.get('is_verified') else '❌'}\n"
+                    f"Engagement: {selected_user['avg_engagement']:.2f} | Tweets: {selected_user['tweet_count']}\n"
+                    f"Highlight: \"{selected_user['recent_tweets'][0]}\"\n"
+                    f"🔗 {selected_user['tweet_urls'][0]}\n\n"
+                    f"🌐 Explore more anomalies on $COMAI Subnet!"
+                ),
+                # Template 2: Specific anomaly focus
+                (
+                    f"🧐 Anomaly alert: {selected_user['anomaly_type']}!\n"
+                    f"User @{selected_user['username']} has {'unusually high' if selected_user['anomaly_type'] == 'High Engagement Low Followers' else 'unusually low'} engagement.\n"
+                    f"Followers: {selected_user['follower_count']}, Engagement Level: {selected_user['avg_engagement']:.2f}\n"
+                    f"Recent Activity: \"{selected_user['recent_tweets'][0]}\"\n"
+                    f"Details here: {selected_user['tweet_urls'][0]} 🌍\n\n"
+                    f"🌟 Stay informed with Influence Insights on $COMAI!"
+                ),
+                # Template 3: Regional anomaly focus
+                (
+                    f"🌍 Regional anomaly detected: {selected_user['anomaly_type']} from {selected_user.get('region_name', 'an unknown region')}.\n"
+                    f"User @{selected_user['username']} posted: \"{selected_user['recent_tweets'][0]}\"\n"
+                    f"Metrics: Followers - {selected_user['follower_count']}, Engagement - {selected_user['avg_engagement']:.2f}\n"
+                    f"🔗 {selected_user['tweet_urls'][0]}\n\n"
+                    f"Uncover regional trends on $COMAI Subnet!"
+                ),
+                # Template 4: Engagement and behavior anomaly
+                (
+                    f"🚨 Behavioral anomaly: {selected_user['anomaly_type']} 🚨\n"
+                    f"User: @{selected_user['username']} | Followers: {selected_user['follower_count']}\n"
+                    f"Engagement: {selected_user['avg_engagement']:.2f} | Total Likes: {selected_user['total_likes']}\n"
+                    f"\"{selected_user['recent_tweets'][0]}\"\n"
+                    f"🔗 Find more: {selected_user['tweet_urls'][0]} 🌟\n\n"
+                    f"🌐 Powered by Influence Insights on $COMAI!"
+                ),
+                # Template 5: Call to action
+                (
+                    f"🚨 Unusual activity: {selected_user['anomaly_type']}!\n"
+                    f"@{selected_user['username']} | Followers: {selected_user['follower_count']} | Likes: {selected_user['total_likes']}\n"
+                    f"Tweet Highlight: \"{selected_user['recent_tweets'][0]}\"\n"
+                    f"See the anomaly here: {selected_user['tweet_urls'][0]}\n\n"
+                    f"🌐 Actionable insights with Influence Insights on $COMAI!"
+                ),
+                # Template 6: Focused on suspicious behavior
+                (
+                    f"⚠️ Suspicious metrics detected for @{selected_user['username']}:\n"
+                    f"Followers: {selected_user['follower_count']} | Engagement: {selected_user['avg_engagement']:.2f}\n"
+                    f"Activity: \"{selected_user['recent_tweets'][0]}\"\n"
+                    f"Check this out: {selected_user['tweet_urls'][0]}\n\n"
+                    f"Stay informed on $COMAI Subnet!"
+                ),
+                # Template 7: Highlighting anomaly with a question
+                (
+                    f"🤔 What's going on with @{selected_user['username']}?\n"
+                    f"Anomaly: {selected_user['anomaly_type']}.\n"
+                    f"Metrics: Followers - {selected_user['follower_count']}, Engagement - {selected_user['avg_engagement']:.2f}\n"
+                    f"\"{selected_user['recent_tweets'][0]}\"\n"
+                    f"🔗 {selected_user['tweet_urls'][0]}\n\n"
+                    f"🌟 Influence Insights powered by $COMAI!"
+                ),
+            ]
+
+            # Generate tweet using a random template
+            tweet_text = random.choice(templates)
 
             logger.info(f"Generated Tweet: {tweet_text}")
 
-            # Save to the database
+            # Save the tweet to the database
             await self.tweet_manager.add_tweet(
                 tweet_text=tweet_text,
                 user_id=selected_user["user_id"],

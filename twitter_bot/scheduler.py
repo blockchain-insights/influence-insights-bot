@@ -50,8 +50,9 @@ scheduler_app.conf.worker_proc_alive_timeout = 60
 # Immediate execution logic
 if TRIGGER_IMMEDIATE:
     try:
+        # Ensure the immediate execution only runs once before the scheduler kicks in
         logger.info("Triggering immediate execution of `generate_and_store_tweet_task`.")
-        result = scheduler_app.send_task('tasks.generate_and_store_tweet_task')
+        result = generate_and_store_tweet_task.delay()
         logger.info(f"Task ID for `generate_and_store_tweet_task`: {result.id}")
 
         # Schedule the `post_random_tweet_task` to follow with a delay
