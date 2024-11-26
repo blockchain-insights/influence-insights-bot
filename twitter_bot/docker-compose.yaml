@@ -23,7 +23,7 @@ services:
     depends_on:
       - postgres
     environment:
-      - REDIS_URL=redis://redis-sn22:6379/0  # Use existing Redis instance
+      - REDIS_URL=${REDIS_URL}  # Use existing Redis instance
       - FETCH_API_BASE_URL=${FETCH_API_BASE_URL}
       - CALLER_INTERVAL_MINUTES=${CALLER_INTERVAL_MINUTES}
       - TRIGGER_IMMEDIATE=${TRIGGER_IMMEDIATE}
