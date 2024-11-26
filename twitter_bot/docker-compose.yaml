@@ -15,6 +15,13 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-changeit456$}
     restart: unless-stopped
 
+  redis:
+    image: redis:alpine
+    container_name: redis-twitter-bot
+    ports:
+      - "6380:6379"  # Expose Redis on port 6380
+    restart: unless-stopped
+
   scheduler:
     build:
       context: .
@@ -22,8 +29,9 @@ services:
     command: ["celery", "-A", "scheduler", "worker", "--beat", "-E", "--loglevel=info"]
     depends_on:
       - postgres
+      - redis
     environment:
-      - REDIS_URL=${REDIS_URL}  # Use existing Redis instance
+      - REDIS_URL=redis://redis-twitter-bot:6379/0  # Ensure this matches the new Redis container
       - FETCH_API_BASE_URL=${FETCH_API_BASE_URL}
       - CALLER_INTERVAL_MINUTES=${CALLER_INTERVAL_MINUTES}
       - TRIGGER_IMMEDIATE=${TRIGGER_IMMEDIATE}
@@ -42,7 +50,7 @@ services:
     container_name: scheduler-ui
     ports:
       - "5555:5555"
-    command: ["celery", "flower", "--broker=redis://redis-sn22:6379/0"]
+    command: ["celery", "flower", "--broker=redis://redis-twitter-bot:6379/0"]
     depends_on:
       - scheduler
     restart: unless-stopped
