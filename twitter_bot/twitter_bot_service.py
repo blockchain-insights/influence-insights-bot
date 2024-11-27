@@ -1,133 +1,81 @@
-import random
+from tweet_templates import get_insightful_templates, get_suspicious_templates
 from loguru import logger
-from database.models.tweet import TweetManager
-from rest_client import RestClient
-from twitter_api.twitter_service import TwitterService
-from helpers.file_service import FileService  # Import the FileService
+import random
 
 
 class TwitterBotService:
-    def __init__(
-        self,
-        rest_client: RestClient,
-        tweet_manager: TweetManager,
-        twitter_service: TwitterService,
-        file_service: FileService,
-        test_mode: bool = False,  # Add test mode flag
-    ):
+    def __init__(self, rest_client, tweet_manager, twitter_service, file_service, test_mode=False):
         self.rest_client = rest_client
         self.tweet_manager = tweet_manager
         self.twitter_service = twitter_service
         self.file_service = file_service
-        self.test_mode = test_mode  # Initialize the flag
+        self.test_mode = test_mode
 
-    async def generate_and_store_tweet(self, token: str):
+    async def fetch_data(self, token: str, source: str) -> list:
         """
-        Fetches data from an API, generates a tweet, and stores it in the database.
+        Fetch data from the configured endpoint.
+        :param token: Token to filter data.
+        :param source: Source of data ("fetch_insightful_data" or "fetch_suspicious_accounts").
+        :return: List of data items.
         """
         try:
-            data = await self.rest_client.fetch_insightful_data(token=token)
-
-            # Debug: Log raw response
-            logger.debug(f"Raw response from API: {data}")
-
-            # Validate and extract data
-            if isinstance(data, dict) and "response" in data:
-                data = data["response"]
+            if source == "fetch_insightful_data":
+                data = await self.rest_client.fetch_insightful_data(token=token)
+            elif source == "fetch_suspicious_accounts":
+                data = await self.rest_client.fetch_suspicious_accounts(token=token)
             else:
-                logger.error("Unexpected data format: 'response' key missing.")
-                return
+                raise ValueError(f"Unknown data source: {source}")
 
-            if not isinstance(data, list):
-                logger.error("Unexpected data format: 'response' is not a list.")
+            # Validate and return data
+            if isinstance(data, dict) and "response" in data:
+                return data["response"]
+            else:
+                logger.error(f"Unexpected data format from {source} endpoint.")
+                return []
+
+        except Exception as e:
+            logger.error(f"Error fetching data from source '{source}': {e}")
+            return []
+
+    async def generate_and_store_tweet(self, token: str, source: str = "fetch_insightful_data"):
+        """
+        Generate and store a tweet from either insightful or suspicious data.
+        """
+        try:
+            data = await self.fetch_data(token=token, source=source)
+
+            if not data:
+                logger.warning("No data available for tweet generation.")
                 return
 
             # Filter anomalies
-            anomalies = [item for item in data if isinstance(item, dict) and item.get("anomaly_type") != "Normal"]
+            anomalies = [item for item in data if item.get("suspicious_types") or item.get("anomaly_type")]
             if not anomalies:
                 logger.warning("No anomalies found.")
                 return
 
-            # Select a random user with an anomaly
+            # Select a random user
             selected_user = random.choice(anomalies)
 
-            # Templates for tweet generation
-            templates = [
-                # Template 1: High-level overview of anomaly
-                (
-                    f"🚨 Suspicious activity detected: {selected_user['anomaly_type']} 🚨\n"
-                    f"@{selected_user['username']} | Followers: {selected_user['follower_count']} | Verified: {'✅' if selected_user.get('is_verified') else '❌'}\n"
-                    f"Engagement: {selected_user['avg_engagement']:.2f} | Tweets: {selected_user['tweet_count']}\n"
-                    f"Highlight: \"{selected_user['recent_tweets'][0]}\"\n"
-                    f"🔗 {selected_user['tweet_urls'][0]}\n\n"
-                    f"🌐 Explore more anomalies on $COMAI Subnet!"
-                ),
-                # Template 2: Specific anomaly focus
-                (
-                    f"🧐 Anomaly alert: {selected_user['anomaly_type']}!\n"
-                    f"User @{selected_user['username']} has {'unusually high' if selected_user['anomaly_type'] == 'High Engagement Low Followers' else 'unusually low'} engagement.\n"
-                    f"Followers: {selected_user['follower_count']}, Engagement Level: {selected_user['avg_engagement']:.2f}\n"
-                    f"Recent Activity: \"{selected_user['recent_tweets'][0]}\"\n"
-                    f"Details here: {selected_user['tweet_urls'][0]} 🌍\n\n"
-                    f"🌟 Stay informed with Influence Insights on $COMAI!"
-                ),
-                # Template 3: Regional anomaly focus
-                (
-                    f"🌍 Regional anomaly detected: {selected_user['anomaly_type']} from {selected_user.get('region_name') or 'an unknown region'}.\n"
-                    f"User @{selected_user['username']} posted: \"{selected_user['recent_tweets'][0]}\"\n"
-                    f"Metrics: Followers - {selected_user['follower_count']}, Engagement - {selected_user['avg_engagement']:.2f}\n"
-                    f"🔗 {selected_user['tweet_urls'][0]}\n\n"
-                    f"Uncover regional trends on $COMAI Subnet!"
-                ),
-                # Template 4: Engagement and behavior anomaly
-                (
-                    f"🚨 Behavioral anomaly: {selected_user['anomaly_type']} 🚨\n"
-                    f"User: @{selected_user['username']} | Followers: {selected_user['follower_count']}\n"
-                    f"Engagement: {selected_user['avg_engagement']:.2f} | Total Likes: {selected_user['total_likes']}\n"
-                    f"\"{selected_user['recent_tweets'][0]}\"\n"
-                    f"🔗 Find more: {selected_user['tweet_urls'][0]} 🌟\n\n"
-                    f"🌐 Powered by Influence Insights on $COMAI!"
-                ),
-                # Template 5: Call to action
-                (
-                    f"🚨 Unusual activity: {selected_user['anomaly_type']}!\n"
-                    f"@{selected_user['username']} | Followers: {selected_user['follower_count']} | Likes: {selected_user['total_likes']}\n"
-                    f"Tweet Highlight: \"{selected_user['recent_tweets'][0]}\"\n"
-                    f"See the anomaly here: {selected_user['tweet_urls'][0]}\n\n"
-                    f"🌐 Actionable insights with Influence Insights on $COMAI!"
-                ),
-                # Template 6: Focused on suspicious behavior
-                (
-                    f"⚠️ Suspicious metrics detected for @{selected_user['username']}:\n"
-                    f"Followers: {selected_user['follower_count']} | Engagement: {selected_user['avg_engagement']:.2f}\n"
-                    f"Activity: \"{selected_user['recent_tweets'][0]}\"\n"
-                    f"Check this out: {selected_user['tweet_urls'][0]}\n\n"
-                    f"Stay informed on $COMAI Subnet!"
-                ),
-                # Template 7: Highlighting anomaly with a question
-                (
-                    f"🤔 What's going on with @{selected_user['username']}?\n"
-                    f"Anomaly: {selected_user['anomaly_type']}.\n"
-                    f"Metrics: Followers - {selected_user['follower_count']}, Engagement - {selected_user['avg_engagement']:.2f}\n"
-                    f"\"{selected_user['recent_tweets'][0]}\"\n"
-                    f"🔗 {selected_user['tweet_urls'][0]}\n\n"
-                    f"🌟 Influence Insights powered by $COMAI!"
-                ),
-            ]
+            # Fetch appropriate templates
+            templates = (
+                get_insightful_templates(selected_user)
+                if source == "fetch_insightful_data"
+                else get_suspicious_templates(selected_user)
+            )
 
-            # Generate tweet using a random template
+            # Generate tweet
             tweet_text = random.choice(templates)
 
             logger.info(f"Generated Tweet: {tweet_text}")
 
-            # Save the tweet to the database
+            # Save tweet
             await self.tweet_manager.add_tweet(
                 tweet_text=tweet_text,
                 user_id=selected_user["user_id"],
                 username=selected_user["username"],
-                anomaly_type=selected_user["anomaly_type"]
+                anomaly_type=", ".join(selected_user.get("suspicious_types", [])),
             )
-
         except Exception as e:
             logger.error(f"Error generating tweet: {e}")
 
