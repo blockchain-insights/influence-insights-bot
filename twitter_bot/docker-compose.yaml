@@ -21,25 +21,13 @@ services:
       - "6380:6379"
     restart: unless-stopped
 
-  migrations:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: alembic-migrations
-    command: ["alembic", "upgrade", "head"]
-    environment:
-      - DATABASE_URL=${DATABASE_URL}
-    depends_on:
-      - postgres
-    restart: "no"
-
   scheduler:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: twitter_bot-scheduler
     command: >
-      bash -c "alembic upgrade head && celery -A scheduler worker --beat -E --loglevel=info"
+      bash -c "alembic upgrade head && celery -A scheduler worker --beat -E --loglevel=info --concurrency=1"
     depends_on:
       - postgres
       - redis

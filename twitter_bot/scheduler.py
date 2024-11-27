@@ -6,6 +6,7 @@ from loguru import logger
 import sys
 from tasks import generate_and_store_tweet_task, post_random_tweet_task
 
+# Load environment variables
 load_dotenv()
 
 # Logging configuration
@@ -13,7 +14,8 @@ logger.remove()
 logger.add(
     "../logs/scheduler.log",
     rotation="500 MB",
-    format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}"
+    format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}",
+    level="DEBUG"
 )
 logger.add(
     sys.stdout,
@@ -28,10 +30,22 @@ TWEET_POSTING_INTERVAL_HOURS = int(os.getenv('TWEET_POSTING_INTERVAL_HOURS', 24)
 REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
 TRIGGER_IMMEDIATE = os.getenv('TRIGGER_IMMEDIATE', 'false').lower() == 'true'
 
+# Debug environment values
+logger.debug(f"Environment Configuration: TWEET_GENERATION_INTERVAL_HOURS={TWEET_GENERATION_INTERVAL_HOURS}, "
+             f"TWEET_POSTING_DELAY_SECONDS={TWEET_POSTING_DELAY_SECONDS}, TWEET_POSTING_INTERVAL_HOURS={TWEET_POSTING_INTERVAL_HOURS}, "
+             f"REDIS_URL={REDIS_URL}, TRIGGER_IMMEDIATE={TRIGGER_IMMEDIATE}")
+
+# Initialize Celery app
 logger.debug(f"Initializing Celery with broker: {REDIS_URL}")
 scheduler_app = Celery('tasks', broker=REDIS_URL)
 
-# Schedule tasks
+# Celery configuration
+scheduler_app.conf.timezone = 'UTC'
+scheduler_app.conf.broker_connection_retry_on_startup = True
+scheduler_app.conf.worker_proc_alive_timeout = 60
+scheduler_app.conf.task_annotations = {'*': {'rate_limit': '10/m'}}  # Optional: rate limiting
+
+# Define beat schedule for periodic tasks
 scheduler_app.conf.beat_schedule = {
     'generate-and-store-tweet': {
         'task': 'tasks.generate_and_store_tweet_task',
@@ -43,14 +57,10 @@ scheduler_app.conf.beat_schedule = {
     },
 }
 
-scheduler_app.conf.timezone = 'UTC'
-scheduler_app.conf.broker_connection_retry_on_startup = True
-scheduler_app.conf.worker_proc_alive_timeout = 60
-
 # Immediate execution logic
 if TRIGGER_IMMEDIATE:
     try:
-        # Ensure the immediate execution only runs once before the scheduler kicks in
+        # Ensure the immediate execution only runs once before the scheduler takes over
         logger.info("Triggering immediate execution of `generate_and_store_tweet_task`.")
         result = generate_and_store_tweet_task.delay()
         logger.info(f"Task ID for `generate_and_store_tweet_task`: {result.id}")
@@ -61,5 +71,7 @@ if TRIGGER_IMMEDIATE:
     except Exception as e:
         logger.error(f"Failed to trigger immediate tasks: {e}")
 
+# Start Celery worker (with concurrency flag)
 if __name__ == '__main__':
-    scheduler_app.start(['worker', '-B', '--loglevel=info'])
+    logger.info("Starting Celery worker with scheduler...")
+    scheduler_app.start(['worker', '-B', '--loglevel=info', '--concurrency=1'])
