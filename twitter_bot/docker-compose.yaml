@@ -31,7 +31,6 @@ services:
     depends_on:
       - postgres
       - redis
-      - migrations
     environment:
       - REDIS_URL=${REDIS_URL}
       - FETCH_API_BASE_URL=${FETCH_API_BASE_URL}
