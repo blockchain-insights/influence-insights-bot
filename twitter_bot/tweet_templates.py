@@ -1,141 +1,78 @@
-# tweet_templates.py
-
-def get_insightful_templates(selected_user):
-    return [
-        # Template 1: High-level overview of anomaly
-        (
-            f"🚨 Suspicious activity detected: {selected_user['anomaly_type']} 🚨\n"
-            f"@{selected_user['username']} | Followers: {selected_user['follower_count']} | Verified: {'✅' if selected_user.get('is_verified') else '❌'}\n"
-            f"Engagement: {selected_user['avg_engagement']:.2f} | Tweets: {selected_user['tweet_count']}\n"
-            f"Highlight: \"{selected_user['recent_tweets'][0]}\"\n"
-            f"🔗 {selected_user['tweet_urls'][0]}\n\n"
-            f"🌐 Explore more anomalies on $COMAI Subnet!"
-        ),
-        # Template 2: Specific anomaly focus
-        (
-            f"🧐 Anomaly alert: {selected_user['anomaly_type']}!\n"
-            f"User @{selected_user['username']} has {'unusually high' if selected_user['anomaly_type'] == 'High Engagement Low Followers' else 'unusually low'} engagement.\n"
-            f"Followers: {selected_user['follower_count']}, Engagement Level: {selected_user['avg_engagement']:.2f}\n"
-            f"Recent Activity: \"{selected_user['recent_tweets'][0]}\"\n"
-            f"Details here: {selected_user['tweet_urls'][0]} 🌍\n\n"
-            f"🌟 Stay informed with Influence Insights on $COMAI!"
-        ),
-        # Template 3: Regional anomaly focus
-        (
-            f"🌍 Regional anomaly detected: {selected_user['anomaly_type']} from {selected_user.get('region_name') or 'an unknown region'}.\n"
-            f"User @{selected_user['username']} posted: \"{selected_user['recent_tweets'][0]}\"\n"
-            f"Metrics: Followers - {selected_user['follower_count']}, Engagement - {selected_user['avg_engagement']:.2f}\n"
-            f"🔗 {selected_user['tweet_urls'][0]}\n\n"
-            f"Uncover regional trends on $COMAI Subnet!"
-        ),
-        # Template 4: Engagement and behavior anomaly
-        (
-            f"🚨 Behavioral anomaly: {selected_user['anomaly_type']} 🚨\n"
-            f"User: @{selected_user['username']} | Followers: {selected_user['follower_count']}\n"
-            f"Engagement: {selected_user['avg_engagement']:.2f} | Total Likes: {selected_user['total_likes']}\n"
-            f"\"{selected_user['recent_tweets'][0]}\"\n"
-            f"🔗 Find more: {selected_user['tweet_urls'][0]} 🌟\n\n"
-            f"🌐 Powered by Influence Insights on $COMAI!"
-        ),
-        # Template 5: Call to action
-        (
-            f"🚨 Unusual activity: {selected_user['anomaly_type']}!\n"
-            f"@{selected_user['username']} | Followers: {selected_user['follower_count']} | Likes: {selected_user['total_likes']}\n"
-            f"Tweet Highlight: \"{selected_user['recent_tweets'][0]}\"\n"
-            f"See the anomaly here: {selected_user['tweet_urls'][0]}\n\n"
-            f"🌐 Actionable insights with Influence Insights on $COMAI!"
-        ),
-        # Template 6: Focused on suspicious behavior
-        (
-            f"⚠️ Suspicious metrics detected for @{selected_user['username']}:\n"
-            f"Followers: {selected_user['follower_count']} | Engagement: {selected_user['avg_engagement']:.2f}\n"
-            f"Activity: \"{selected_user['recent_tweets'][0]}\"\n"
-            f"Check this out: {selected_user['tweet_urls'][0]}\n\n"
-            f"Stay informed on $COMAI Subnet!"
-        ),
-        # Template 7: Highlighting anomaly with a question
-        (
-            f"🤔 What's going on with @{selected_user['username']}?\n"
-            f"Anomaly: {selected_user['anomaly_type']}.\n"
-            f"Metrics: Followers - {selected_user['follower_count']}, Engagement - {selected_user['avg_engagement']:.2f}\n"
-            f"\"{selected_user['recent_tweets'][0]}\"\n"
-            f"🔗 {selected_user['tweet_urls'][0]}\n\n"
-            f"🌟 Influence Insights powered by $COMAI!"
-        ),
-    ]
-
-
-def get_suspicious_templates(selected_user):
-    # Determine singular/plural for anomalies
-    anomalies = selected_user.get("suspicious_types", [])
-    anomaly_text = (
-        f"an anomaly: {anomalies[0]}" if len(anomalies) == 1 else f"multiple anomalies: {', '.join(anomalies)}"
-    )
+def get_user_classification_templates(selected_user):
+    """
+    Generate diverse templates for user classifications based on unified endpoint data.
+    """
+    user_classification = selected_user.get("user_classification", "Unknown Classification")
+    username = selected_user.get("username", "Unknown User")
+    followers = selected_user.get("follower_count", 0)
+    engagement = selected_user.get("avg_engagement", 0.0)
+    tweets = selected_user.get("tweet_count", 0)
+    total_likes = selected_user.get("total_likes", 0)
+    max_likes = selected_user.get("max_likes", 0)
+    region = selected_user.get("region_name", "Unknown Region")
+    recent_tweet = selected_user.get("recent_tweets", ["No recent tweet"])[0]
+    tweet_url = selected_user.get("tweet_urls", ["No URL"])[0]
 
     return [
-        # Template 1: General anomaly detection
+        # Template 1: High-level overview
         (
-            f"⚠️ Suspicious Activity Detected ⚠️\n"
-            f"User @{selected_user['username']} triggered {anomaly_text}.\n"
-            f"Followers: {selected_user['follower_count']}, Engagement: {selected_user['avg_engagement']:.2f}\n"
-            f"Recent Activity: \"{selected_user['recent_tweets'][0]}\"\n"
-            f"🔗 Check more anomalies: {selected_user['tweet_urls'][0]}\n\n"
-            f"🌟 Explore detailed insights on $COMAI Subnet!"
+            f"📊 Classification: {user_classification}\n"
+            f"User: @{username} | Followers: {followers}\n"
+            f"Engagement: {engagement:.2f} | Tweets: {tweets} | Max Likes: {max_likes}\n"
+            f"Recent Tweet: \"{recent_tweet}\"\n"
+            f"🔗 Check it out: {tweet_url}\n\n"
+            f"Stay updated with $COMAI insights!"
         ),
-        # Template 2: Regional focus
+        # Template 2: Highlight regional focus
         (
-            f"🚨 Regional Alert 🚨\n"
-            f"User @{selected_user['username']} detected with {anomaly_text} in "
-            f"{selected_user.get('region_name', 'Unknown Region')}.\n"
-            f"Followers: {selected_user['follower_count']} | Engagement: {selected_user['avg_engagement']:.2f}\n"
-            f"Tweet: \"{selected_user['recent_tweets'][0]}\"\n"
-            f"🔗 Explore anomalies: {selected_user['tweet_urls'][0]}\n\n"
-            f"🌐 Stay ahead with Influence Insights powered by $COMAI!"
+            f"🌍 Regional Insight: {user_classification} in {region}\n"
+            f"User @{username} | Followers: {followers}, Engagement: {engagement:.2f}\n"
+            f"Highlight: \"{recent_tweet}\"\n"
+            f"🔗 More details: {tweet_url}\n\n"
+            f"Discover regional trends with $COMAI Subnet!"
         ),
-        # Template 3: Engagement and anomaly focus
+        # Template 3: Behavior spotlight
         (
-            f"🚨 Behavioral Alert 🚨\n"
-            f"@{selected_user['username']} shows {anomaly_text}.\n"
-            f"Followers: {selected_user['follower_count']} | Engagement: {selected_user['avg_engagement']:.2f}\n"
-            f"Recent Highlight: \"{selected_user['recent_tweets'][0]}\"\n"
-            f"🔗 Investigate further: {selected_user['tweet_urls'][0]}\n\n"
-            f"🌟 Powered by Influence Insights on $COMAI Subnet!"
+            f"🚨 Behavioral Classification: {user_classification} 🚨\n"
+            f"User @{username} | Followers: {followers}\n"
+            f"Engagement: {engagement:.2f} | Total Likes: {total_likes}\n"
+            f"Recent Activity: \"{recent_tweet}\"\n"
+            f"🔗 Learn more: {tweet_url}\n\n"
+            f"Insights powered by $COMAI!"
         ),
-        # Template 4: Highlighting unusual activity
+        # Template 4: Metrics breakdown
         (
-            f"🤔 What's happening with @{selected_user['username']}?\n"
-            f"Detected {anomaly_text}.\n"
-            f"Metrics: Followers - {selected_user['follower_count']}, Engagement - {selected_user['avg_engagement']:.2f}\n"
-            f"\"{selected_user['recent_tweets'][0]}\"\n"
-            f"🔗 Learn more: {selected_user['tweet_urls'][0]}\n\n"
-            f"🌐 Insights by $COMAI Subnet!"
+            f"📈 Metrics Breakdown:\n"
+            f"User @{username} | Classification: {user_classification}\n"
+            f"Followers: {followers} | Engagement: {engagement:.2f} | Tweets: {tweets}\n"
+            f"Highlight: \"{recent_tweet}\"\n"
+            f"🔗 Check the full story: {tweet_url}\n\n"
+            f"Powered by Influence Insights on $COMAI!"
         ),
-        # Template 5: Call-to-action for anomalies
+        # Template 5: Engagement focus
         (
-            f"⚠️ Unusual Metrics Detected ⚠️\n"
-            f"@{selected_user['username']} with {anomaly_text}.\n"
-            f"Followers: {selected_user['follower_count']} | Tweets: {selected_user['tweet_count']} | Likes: {selected_user['total_likes']}\n"
-            f"Activity Highlight: \"{selected_user['recent_tweets'][0]}\"\n"
-            f"🔗 Explore details: {selected_user['tweet_urls'][0]}\n\n"
-            f"🌟 Stay informed with $COMAI Influence Insights!"
+            f"🔥 Engagement Spotlight 🔥\n"
+            f"@{username} classified as {user_classification}.\n"
+            f"Followers: {followers} | Engagement: {engagement:.2f}\n"
+            f"Top Activity: \"{recent_tweet}\"\n"
+            f"🔗 Explore more: {tweet_url}\n\n"
+            f"Stay ahead with $COMAI Subnet!"
         ),
-        # Template 6: Regional anomaly with behavioral highlight
+        # Template 6: Call to action
         (
-            f"🌍 Anomaly in Focus 🌍\n"
-            f"User @{selected_user['username']} detected with {anomaly_text}.\n"
-            f"Region: {selected_user.get('region_name', 'Unknown')} | Engagement: {selected_user['avg_engagement']:.2f}\n"
-            f"\"{selected_user['recent_tweets'][0]}\"\n"
-            f"🔗 Check the full story: {selected_user['tweet_urls'][0]}\n\n"
-            f"Powered by $COMAI Subnet!"
+            f"🧐 Curious about @{username}'s activity?\n"
+            f"Classification: {user_classification}\n"
+            f"Followers: {followers}, Engagement: {engagement:.2f}\n"
+            f"Recent Tweet: \"{recent_tweet}\"\n"
+            f"🔗 Dive deeper: {tweet_url}\n\n"
+            f"Actionable insights powered by $COMAI!"
         ),
-        # Template 7: Engagement vs anomaly metrics
+        # Template 7: Anomaly-based classification
         (
-            f"📊 Suspicious Metrics 📊\n"
-            f"@{selected_user['username']} detected with {anomaly_text}.\n"
-            f"Metrics: Followers - {selected_user['follower_count']}, Engagement - {selected_user['avg_engagement']:.2f}, Likes - {selected_user['total_likes']}\n"
-            f"Activity: \"{selected_user['recent_tweets'][0]}\"\n"
-            f"🔗 Learn more: {selected_user['tweet_urls'][0]}\n\n"
-            f"🌟 Influence Insights on $COMAI Subnet!"
+            f"🚨 User @{username} flagged as {user_classification}.\n"
+            f"Metrics: Followers - {followers}, Engagement - {engagement:.2f}, Tweets - {tweets}\n"
+            f"Recent Activity: \"{recent_tweet}\"\n"
+            f"🔗 Investigate: {tweet_url}\n\n"
+            f"Stay informed with $COMAI Subnet!"
         ),
     ]
-

@@ -14,60 +14,51 @@ import os
 
 load_dotenv()
 
-# Task for generating and storing an insightful tweet
+# Task for generating and storing tweets by classification
 @shared_task
-def generate_and_store_insightful_tweet_task():
-    asyncio.run(generate_and_store_insightful_tweet())
+def generate_and_store_tweets_task():
+    asyncio.run(generate_and_store_tweets())
 
-async def generate_and_store_insightful_tweet():
+async def generate_and_store_tweets():
     """
-    Generates and stores an insightful tweet in the database.
+    Fetch data for all classifications and store tweets in the database.
     """
     try:
+        # Initialize required components
         base_url = os.getenv("FETCH_API_BASE_URL", "http://localhost:9900")
         rest_client = RestClient(base_url)
         settings = Settings()
         session_manager = DatabaseSessionManager()
         session_manager.init(settings.DATABASE_URL)
         tweet_manager = TweetManager(session_manager)
-        twitter_bot = TwitterBotService(rest_client, tweet_manager, None, None)
+        twitter_client = TwitterClient(settings)
+        twitter_service = TwitterService(twitter_client)
 
-        await twitter_bot.generate_and_store_tweet(token="TAO", source="fetch_insightful_data")
+        # Create TwitterBotService instance
+        twitter_bot = TwitterBotService(
+            rest_client=rest_client,
+            tweet_manager=tweet_manager,
+            twitter_service=None,  # Not used here
+            file_service=None,  # Not used here
+            test_mode=False
+        )
+
+        # Fetch and store tweets for all classifications
+        await twitter_bot.fetch_and_store_tweets(token="TAO")
     except Exception as e:
-        logger.error(f"Error in generate_and_store_insightful_tweet_task: {e}")
+        logger.error(f"Error in generate_and_store_tweets_task: {e}")
 
-# Task for generating and storing a suspicious tweet
-@shared_task
-def generate_and_store_suspicious_tweet_task():
-    asyncio.run(generate_and_store_suspicious_tweet())
-
-async def generate_and_store_suspicious_tweet():
-    """
-    Generates and stores a suspicious tweet in the database.
-    """
-    try:
-        base_url = os.getenv("FETCH_API_BASE_URL", "http://localhost:9900")
-        rest_client = RestClient(base_url)
-        settings = Settings()
-        session_manager = DatabaseSessionManager()
-        session_manager.init(settings.DATABASE_URL)
-        tweet_manager = TweetManager(session_manager)
-        twitter_bot = TwitterBotService(rest_client, tweet_manager, None, None)
-
-        await twitter_bot.generate_and_store_tweet(token="TAO", source="fetch_suspicious_accounts")
-    except Exception as e:
-        logger.error(f"Error in generate_and_store_suspicious_tweet_task: {e}")
-
-# Task for posting a tweet
+# Task for posting a random tweet
 @shared_task
 def post_random_tweet_task():
     asyncio.run(post_random_tweet())
 
 async def post_random_tweet():
     """
-    Retrieves a random tweet from the database and posts it using TwitterClient.
+    Retrieve a random tweet from the database and post it using TwitterClient.
     """
     try:
+        # Initialize required components
         settings = Settings()
         session_manager = DatabaseSessionManager()
         session_manager.init(settings.DATABASE_URL)
@@ -75,9 +66,20 @@ async def post_random_tweet():
         twitter_client = TwitterClient(settings)
         twitter_service = TwitterService(twitter_client)
         file_service = FileService("test_tweets.log")
-        test_mode = os.getenv('TEST_MODE', 'False').strip().lower() in ['true', '1', 'yes']
-        twitter_bot = TwitterBotService(None, tweet_manager, twitter_service, file_service, test_mode)
 
+        # Check if the bot is in test mode
+        test_mode = os.getenv('TEST_MODE', 'False').strip().lower() in ['true', '1', 'yes']
+
+        # Create TwitterBotService instance
+        twitter_bot = TwitterBotService(
+            rest_client=None,  # Not used here
+            tweet_manager=tweet_manager,
+            twitter_service=twitter_service,
+            file_service=file_service,
+            test_mode=test_mode
+        )
+
+        # Post a random tweet
         await twitter_bot.post_random_tweet()
     except Exception as e:
         logger.error(f"Error in post_random_tweet_task: {e}")
