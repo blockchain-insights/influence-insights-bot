@@ -10,8 +10,8 @@ def get_user_classification_templates(selected_user):
     total_likes = selected_user.get("total_likes", 0)
     max_likes = selected_user.get("max_likes", 0)
     region = selected_user.get("region_name", "Unknown Region")
-    recent_tweet = selected_user.get("recent_tweets", ["No recent tweet"])[0]
-    tweet_url = selected_user.get("tweet_urls", ["No URL"])[0]
+    tweet_text = selected_user.get("tweet_text", ["No recent tweet"])
+    tweet_url = selected_user.get("tweet_url", ["No URL"])
 
     return [
         # Template 1: High-level overview
@@ -19,7 +19,7 @@ def get_user_classification_templates(selected_user):
             f"📊 Classification: {user_classification}\n"
             f"User: @{username} | Followers: {followers}\n"
             f"Engagement: {engagement:.2f} | Tweets: {tweets} | Max Likes: {max_likes}\n"
-            f"Recent Tweet: \"{recent_tweet}\"\n"
+            f"Recent Tweet: \"{tweet_text}\"\n"
             f"🔗 Check it out: {tweet_url}\n\n"
             f"Stay updated with $COMAI insights!"
         ),
@@ -27,7 +27,7 @@ def get_user_classification_templates(selected_user):
         (
             f"🌍 Regional Insight: {user_classification} in {region}\n"
             f"User @{username} | Followers: {followers}, Engagement: {engagement:.2f}\n"
-            f"Highlight: \"{recent_tweet}\"\n"
+            f"Highlight: \"{tweet_text}\"\n"
             f"🔗 More details: {tweet_url}\n\n"
             f"Discover regional trends with $COMAI Subnet!"
         ),
@@ -36,7 +36,7 @@ def get_user_classification_templates(selected_user):
             f"🚨 Behavioral Classification: {user_classification} 🚨\n"
             f"User @{username} | Followers: {followers}\n"
             f"Engagement: {engagement:.2f} | Total Likes: {total_likes}\n"
-            f"Recent Activity: \"{recent_tweet}\"\n"
+            f"Recent Activity: \"{tweet_text}\"\n"
             f"🔗 Learn more: {tweet_url}\n\n"
             f"Insights powered by $COMAI!"
         ),
@@ -45,7 +45,7 @@ def get_user_classification_templates(selected_user):
             f"📈 Metrics Breakdown:\n"
             f"User @{username} | Classification: {user_classification}\n"
             f"Followers: {followers} | Engagement: {engagement:.2f} | Tweets: {tweets}\n"
-            f"Highlight: \"{recent_tweet}\"\n"
+            f"Highlight: \"{tweet_text}\"\n"
             f"🔗 Check the full story: {tweet_url}\n\n"
             f"Powered by Influence Insights on $COMAI!"
         ),
@@ -54,7 +54,7 @@ def get_user_classification_templates(selected_user):
             f"🔥 Engagement Spotlight 🔥\n"
             f"@{username} classified as {user_classification}.\n"
             f"Followers: {followers} | Engagement: {engagement:.2f}\n"
-            f"Top Activity: \"{recent_tweet}\"\n"
+            f"Top Activity: \"{tweet_text}\"\n"
             f"🔗 Explore more: {tweet_url}\n\n"
             f"Stay ahead with $COMAI Subnet!"
         ),
@@ -63,7 +63,7 @@ def get_user_classification_templates(selected_user):
             f"🧐 Curious about @{username}'s activity?\n"
             f"Classification: {user_classification}\n"
             f"Followers: {followers}, Engagement: {engagement:.2f}\n"
-            f"Recent Tweet: \"{recent_tweet}\"\n"
+            f"Recent Tweet: \"{tweet_text}\"\n"
             f"🔗 Dive deeper: {tweet_url}\n\n"
             f"Actionable insights powered by $COMAI!"
         ),
@@ -71,7 +71,7 @@ def get_user_classification_templates(selected_user):
         (
             f"🚨 User @{username} flagged as {user_classification}.\n"
             f"Metrics: Followers - {followers}, Engagement - {engagement:.2f}, Tweets - {tweets}\n"
-            f"Recent Activity: \"{recent_tweet}\"\n"
+            f"Recent Activity: \"{tweet_text}\"\n"
             f"🔗 Investigate: {tweet_url}\n\n"
             f"Stay informed with $COMAI Subnet!"
         ),
