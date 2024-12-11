@@ -18,12 +18,13 @@ class TwitterBotService:
         try:
             data = await self.rest_client.fetch_account_analysis(token=token)
 
-            if not data or "response" not in data:
-                logger.warning("No data returned from account analysis endpoint.")
+            # Ensure the response is structured correctly
+            if not data or "response" not in data or "result" not in data["response"]:
+                logger.warning("No valid data returned from account analysis endpoint.")
                 return
 
             classifications = {}
-            for record in data["response"]:
+            for record in data["response"]["result"]:
                 classification = record.get("user_classification")
                 if classification:
                     classifications.setdefault(classification, []).append(record)
